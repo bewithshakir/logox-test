@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEvent, useRef } from "react";
+import { ChangeEvent, MouseEvent, useRef, useState } from "react";
 import classnames from "classnames";
 
 import { useOutsideClick } from "../../hooks/useOutsideClick";
@@ -7,7 +7,7 @@ import { keyboardKey } from "@testing-library/user-event";
 import { checkDefaultVal } from "../../utils/checkDefaultVal";
 
 export interface IOptionProps {
-  name: string;
+  name: string | any;
 }
 interface IDropDownProps {
   value: string | IOptionProps;
@@ -16,6 +16,7 @@ interface IDropDownProps {
   placeholder: string;
   className?: string;
   editable?: boolean;
+  addList: (val: IOptionProps) => void;
 }
 export const SelectDropDown: React.FC<IDropDownProps> = ({
   value,
@@ -24,15 +25,18 @@ export const SelectDropDown: React.FC<IDropDownProps> = ({
   placeholder,
   className,
   editable,
+  addList,
 }) => {
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFocus, setFocus] = useState(false);
+  const [currenSelected, setCurrentSelected] = useState("");
 
   const styles = useDropDownStyles();
-  const [isOpen, setIsOpen, isFocus, setFocus] = useOutsideClick(
-    wrapperRef,
-    inputRef
-  );
+  useOutsideClick(wrapperRef, () => {
+    setIsOpen(false);
+  });
 
   const toggleDropDown = () => {
     setIsOpen(!isOpen);
@@ -41,6 +45,10 @@ export const SelectDropDown: React.FC<IDropDownProps> = ({
     onChangeFn(data);
     setIsOpen(false);
     setFocus(true);
+    setCurrentSelected(data);
+    if (inputRef.current) {
+      (inputRef.current as HTMLInputElement).focus();
+    }
   };
 
   return (
@@ -62,10 +70,17 @@ export const SelectDropDown: React.FC<IDropDownProps> = ({
               onChangeFn(e.target.value);
             }}
             onKeyUp={(e) => {
-              if (e.key === "Enter") {
-                console.log("enter");
-                toggleDropDown();
+              const val = (e.target as any).value.trim();
+              if (e.key === "Enter" && val) {
+                setCurrentSelected(val);
+                const city = { name: val };
+                addList(city);
               }
+            }}
+            onFocus={() => {
+              console.log("hello");
+              setIsOpen(true);
+              setFocus(true);
             }}
           />
         ) : (
@@ -98,7 +113,9 @@ export const SelectDropDown: React.FC<IDropDownProps> = ({
             {options.map((option, i) => (
               <li
                 key={i}
-                className={styles.dropDownItem}
+                className={classnames(styles.dropDownItem, {
+                  active: option.name === currenSelected,
+                })}
                 onClick={() => handleSelect(option.name)}
                 role="option"
                 tabIndex={0}

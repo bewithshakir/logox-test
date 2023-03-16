@@ -1,14 +1,28 @@
 import React, { useState } from "react";
 import "./App.css";
-import { SelectDropDown } from "./components/dropdrown/SelectDropDown";
+import {
+  IOptionProps,
+  SelectDropDown,
+} from "./components/dropdrown/SelectDropDown";
+
+const cities = [{ name: "New York" }, { name: "India" }, { name: "London" }];
 
 function App() {
   const [selectedCity, setSelectedCity] = useState("");
-  const cities = [
-    { name: "New York", id: "NY" },
-    { name: "India", id: "RM" },
-    { name: "London", id: "LDN" },
-  ];
+  const [data, setData] = useState(cities);
+  const addCity = (city: IOptionProps) => {
+    const newData = [...data];
+
+    const updatedData = newData.find(
+      (item: IOptionProps) =>
+        item.name.toLocaleLowerCase() === city.name.toLocaleLowerCase()
+    );
+    if (!updatedData) {
+      newData.push(city);
+      setData(newData);
+    }
+  };
+
   return (
     <div className="App">
       <div className="card">
@@ -17,9 +31,10 @@ function App() {
           onChangeFn={(inputVal) => {
             setSelectedCity(inputVal);
           }}
-          options={cities}
+          options={data}
           placeholder="Select a City"
           editable
+          addList={addCity}
         />
       </div>
     </div>

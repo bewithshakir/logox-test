@@ -54,6 +54,9 @@ export const useDropDownStyles = createUseStyles({
     "& .dropDownItems": {
       padding: "0.75rem 0",
     },
+    "& .active": {
+      background: "#d1deea",
+    },
   },
   dropDownItems: {
     margin: 0,
